@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <name>Gear Generator</name>
+   <name xml:lang="en">Gear Generator</name>          <!-- not shure if it's required-->
+   <name xml:lang="es">Generador de Engranajes</name>
+   <name xml:lang="fr">Générateur d'engrenages</name>
+   <name xml:lang="pt">Gerador de engrenagem</name>
+   <exec>gear-generator.py</exec>
+</plugin>
