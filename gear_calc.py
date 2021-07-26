@@ -20,8 +20,6 @@
 
 from math import cos, sin, tan, pi, radians, atan, asin, acos, sqrt, pow
 
-#Linea a eliminar
-
 # axes position in vectors:
 x = 0
 y = 1
