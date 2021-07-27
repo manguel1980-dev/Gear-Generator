@@ -99,19 +99,26 @@ class mainWindow(QMainWindow):
         self.tableWidget.setItem(0, 7, Acell)
 
 
-
     def _dataRevision(self):
-        # if self.tableWidget.item(0,0).text() ==
-        print(str(self.tableWidget.item(0, 0).text()))
+        self.ErrInt = True
+        self.ErrFloat = True
         pass
+
 
     def _comboBoxRevision(self):
         current_row = self.tableWidget.currentRow()
-        value = self.tableWidget.cellWidget(current_row, 6)
-        value2 = value.currentText()
-        print('este valor: ', value2)
-        if type(value) is None:
-            print('Valor none seleccionado')
+        value = self.tableWidget.cellWidget(current_row, 6).currentText()
+        # value2 = value.currentText()
+        print('este valor: ', value)
+        if value == 'Not Linked':
+            self.statusLabel.setText(value + ' Selected')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+            print(value)
+        else:
+            self.statusLabel.setText('meshing with '+ value+ ' row gear')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+            print('meshing with ', value)
+
 
         #     print("None")
         #     Xcell = QtWidgets.QTableWidgetItem('0')
@@ -134,13 +141,16 @@ class mainWindow(QMainWindow):
         items = self.tableWidget.selectedItems()
         col = self.tableWidget.currentColumn()
         row = self.tableWidget.currentRow()
-        print(row, col)
+        print('_cellChange: ', row, col)
         enteros = [1, 2]
         decimales = [3, 4, 5, 7, 8, 9]
 
         if col in enteros:
             try:
                 cellType  = int(items[0].text())
+                self.ErrInt = False
+                self.statusLabel.setText('OK: Current cell data is an integer')
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             except ValueError:
                 self.ErrInt = False
                 self.statusLabel.setText('Error: Value cell most be an integer')
@@ -149,6 +159,9 @@ class mainWindow(QMainWindow):
         elif col in decimales:
             try:
                 cellType = float(items[0].text())
+                self.ErrFloat = False
+                self.statusLabel.setText('OK: Current cell data is a float')
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             except ValueError:
                 self.ErrFloat = False
                 self.statusLabel.setText('Error: Value cell most be an Float')
@@ -193,14 +206,19 @@ class mainWindow(QMainWindow):
                     mesh = Mesh(self, lista)
                     self.tableWidget.setCellWidget(rowCount, col, mesh)
                     mesh.currentIndexChanged.connect(self._comboBoxRevision)
+                elif col == 7:
+                    Acell = QtWidgets.QTableWidgetItem('0')
+                    Acell.setFlags(QtCore.Qt.ItemIsEnabled)
+                    Acell.setTextAlignment(QtCore.Qt.AlignCenter)
+                    self.tableWidget.setItem(rowCount, col, Acell)
                 elif col == 8:
                     Xcell = QtWidgets.QTableWidgetItem('0')
-                    Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
+                    # Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
                     Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
                     self.tableWidget.setItem(rowCount, col, Xcell)
                 elif col == 9:
                     Ycell = QtWidgets.QTableWidgetItem('0')
-                    Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
+                    # Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
                     Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
                     self.tableWidget.setItem(rowCount, col, Ycell)
                 else:
