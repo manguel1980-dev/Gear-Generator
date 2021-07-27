@@ -90,13 +90,12 @@ class mainWindow(QMainWindow):
         # self.add_gear.clicked.connect(self._addRow)
 
     def _clickBox(self):
-        print('funcionó')
-        Acell = self.tableWidget.item(0, 7).text()
-        print(Acell)
-        Acell = QtWidgets.QTableWidgetItem(Acell)
-        # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
-        Acell.setTextAlignment(QtCore.Qt.AlignCenter)
-        self.tableWidget.setItem(0, 7, Acell)
+        check = self.tableWidget.cellWidget(0, 0).getCheckValue()
+        print(check)
+        # self.statusLabel.setText('Run click box'+ check)
+        # self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+        # print('funcionó')
+        
 
 
     def _dataRevision(self):
@@ -107,15 +106,53 @@ class mainWindow(QMainWindow):
 
     def _comboBoxRevision(self):
         current_row = self.tableWidget.currentRow()
+        # current_col = self.tableWidget.currentRow()
         value = self.tableWidget.cellWidget(current_row, 6).currentText()
-        # value2 = value.currentText()
         print('este valor: ', value)
+
         if value == 'Not Linked':
+            Acell = self.tableWidget.item(current_row, 7).text()
+            Acell = QtWidgets.QTableWidgetItem(Acell)
+            Acell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Acell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(current_row, 7, Acell)
+            
+            Xcell = self.tableWidget.item(current_row, 8).text()
+            Xcell = QtWidgets.QTableWidgetItem(Xcell)
+            # Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(current_row, 8, Xcell)
+
+            Ycell = self.tableWidget.item(current_row, 9).text()
+            Ycell = QtWidgets.QTableWidgetItem(Ycell)
+            # Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(current_row, 9, Ycell)
+            
             self.statusLabel.setText(value + ' Selected')
             self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             print(value)
+
         else:
-            self.statusLabel.setText('meshing with '+ value+ ' row gear')
+            Acell = self.tableWidget.item(current_row, 7).text()
+            Acell = QtWidgets.QTableWidgetItem(Acell)
+            # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Acell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(current_row, 7, Acell)
+            
+            Xcell = self.tableWidget.item(current_row, 8).text()
+            Xcell = QtWidgets.QTableWidgetItem(Xcell)
+            Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(current_row, 8, Xcell)
+
+            Ycell = self.tableWidget.item(current_row, 9).text()
+            Ycell = QtWidgets.QTableWidgetItem(Ycell)
+            Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(current_row, 9, Ycell)
+
+            self.statusLabel.setText('meshing with ' + value + ' row gear')
             self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             print('meshing with ', value)
 
