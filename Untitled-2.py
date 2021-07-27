@@ -3,15 +3,33 @@ from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QCloseEvent, QFont
 from PyQt5.QtWidgets import QDialog, QApplication, QMainWindow, QHeaderView, \
-                            QCheckBox, QComboBox, QMessageBox
+                            QCheckBox, QComboBox, QMessageBox, QWidget, QVBoxLayout
+
+#--------------------------New Import------------
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+#----------------------------------------
 
 class mainWindow(QMainWindow):
     def __init__(self):
         self.ErrInt = True
-        self.ErrInt = True
+        self.ErrFloat = True
         super(mainWindow, self).__init__()
         loadUi('Gear_Generator.ui', self)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+
+        #---------------------------------------------------------------------------
+        mplW = MplWidget()
+        self.addToolBar(QtCore.Qt.BottomToolBarArea, NavigationToolbar(mplW.canvas, self))
+
+        self.Graph = MplWidget(self.mplWidget)
+        # self.Graph = CanvasGraph(self.mplWidget)
+        self.Graph.setObjectName("Gear-View")
+
+        #---------------------------------------------------------------------------
 
         check_box = internal(self)
         check_box.stateChanged.connect(self._clickBox)
@@ -21,7 +39,7 @@ class mainWindow(QMainWindow):
         angle.setTextAlignment(QtCore.Qt.AlignCenter)
         self.tableWidget.setItem(0, 3, angle)
 
-        lista = [None]+[str(i) for i in range(1, self.tableWidget.rowCount())]
+        lista = [None] + [str(i) for i in range(1, self.tableWidget.rowCount())]
         mesh = Mesh(self, lista)
         self.tableWidget.setCellWidget(0, 6, mesh)
 
@@ -186,6 +204,43 @@ class mainWindow(QMainWindow):
 #             QMainWindow.resizeEvent(self, event)
 # ----------------------------------------------------------------------------
 
+
+class CanvasGraph(FigureCanvas):
+    def __init__(self, parent=None):
+        fig, self.ax = plt.subplots(figsize=(5, 4), dpi=200)
+        super().__init__(fig)
+        self.setParent(parent)
+
+        """ 
+        Matplotlib Script
+        """
+        t = np.arange(0.0, 2.0, 0.01)
+        s = 1 + np.sin(2 * np.pi * t)
+
+        self.ax.plot(t, s)
+
+        self.ax.set(xlabel='time (s)', ylabel='voltage (mV)',
+                    title='About as simple as it gets, folks')
+        self.ax.grid()
+        # self.show()
+
+
+
+class MplWidget(QWidget):
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+
+        fig = Figure()
+        self.canvas = FigureCanvas(fig)
+
+        vertical_layout = QVBoxLayout()
+        vertical_layout.addWidget(self.canvas)
+
+        # self.canvas.axes = self.canvas.figure.add_subplot(111)
+        self.setLayout(vertical_layout)
+
+
+
 class internal(QCheckBox):
     def __init__(self, parent):
         super().__init__(parent)
@@ -198,6 +253,7 @@ class internal(QCheckBox):
             print('Check Value Deactivated')
             return False
 
+
 class Mesh(QComboBox):
     def __init__(self, parent, aa):
         super().__init__(parent)
@@ -206,6 +262,7 @@ class Mesh(QComboBox):
     def getComboValue(self):
         print(self.currentText())
         return self.currentText()
+
 
 app = QApplication(sys.argv)
 main_window = mainWindow()
