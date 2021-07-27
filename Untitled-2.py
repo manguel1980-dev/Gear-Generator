@@ -80,8 +80,14 @@ class mainWindow(QMainWindow):
         print(str(self.tableWidget.item(0, 0).text()))
         pass
 
-    def _boxRevision(self):
-        # if self == None:
+    def _comboBoxRevision(self):
+        current_row = self.tableWidget.currentRow()
+        value = self.tableWidget.cellWidget(current_row, 6)
+        print('este valor: ', value.currentText())
+        if value == None:
+            print('Valor none seleccionado')
+
+
         #     print("None")
         #     Xcell = QtWidgets.QTableWidgetItem('0')
         #     # Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -97,8 +103,6 @@ class mainWindow(QMainWindow):
         #     # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
         #     Acell.setTextAlignment(QtCore.Qt.AlignCenter)
         #     self.tableWidget.setItem(1, 7, Acell)
-        pass
-
         pass
 
     def _cellChange(self):
@@ -125,7 +129,7 @@ class mainWindow(QMainWindow):
                 self.statusLabel.setText('Error: Value cell most be an Float')
                 self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
                 return self.alertDialog('Float')
-        print(str(items[0].text()))
+        # print(str(items[0].text()))
 
 
 
@@ -160,10 +164,10 @@ class mainWindow(QMainWindow):
                     angle.setTextAlignment(QtCore.Qt.AlignCenter)
                     self.tableWidget.setItem(rowCount, col, angle)
                 elif col == 6:
-                    lista = [None]+[str(i) for i in range(1, self.tableWidget.rowCount())]
+                    lista = [None] + [str(i) for i in range(1, self.tableWidget.rowCount())]
                     mesh = Mesh(self, lista)
                     self.tableWidget.setCellWidget(rowCount, col, mesh)
-                    mesh.currentIndexChanged.connect(self._boxRevision)
+                    mesh.currentIndexChanged.connect(self._comboBoxRevision)
                 elif col == 8:
                     Xcell = QtWidgets.QTableWidgetItem('0')
                     Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -231,6 +235,7 @@ class MplWidget(QWidget):
         QWidget.__init__(self, parent)
 
         fig = Figure()
+        fig.tight_layout()
         self.canvas = FigureCanvas(fig)
 
         vertical_layout = QVBoxLayout()
