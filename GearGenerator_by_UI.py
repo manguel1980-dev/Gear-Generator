@@ -159,16 +159,42 @@ class mainWindow(QMainWindow):
     def _dataRevision(self):
         self.ErrInt = True
         self.ErrFloat = True
-        pass
+        verification = []
+        row_rev = self.tableWidget.rowCount()
+        print(row_rev)
+
+        for r in range(row_rev):
+            try:
+                check_val_rev = self.tableWidget.cellWidget(r, 0).getCheckValue()
+                teeth_pitch_diam_rev = int(self.tableWidget.item(r, 1).text())
+                teeth_n_rev = int(self.tableWidget.item(r, 2).text())
+                pressure_ang_rev = float(self.tableWidget.item(r, 3).text())
+                s_or_r_radius_rev = float(self.tableWidget.item(r, 4).text()) / 2
+                module_g_rev = float(self.tableWidget.item(r, 5).text())
+                mesh_rev = self.tableWidget.cellWidget(r, 6).currentText()
+                angle_rev = float(self.tableWidget.item(r, 7).text())
+                x_rev = float(self.tableWidget.item(r, 8).text())
+                y_rev = float(self.tableWidget.item(r, 9).text())
+
+                if mesh_rev != 'Not Linked':
+
+                    
+                verification.append(True)
+            except:
+                verification.append(False)
+        
+        return verification
 
 
     def _gearCalculation(self):
-        verif = [True, False, True]
-        # verif = self._dataRevision(self)
+        # verif = [True, False, True]
+        verif = self._dataRevision()
         gears=[]
+
         for row_g in range(len(verif)):
-            gears.append([row_g])
+            gears.append([row_g + 1])
             print('intento: ', verif[row_g])
+
             if (verif[row_g]):
                 teeth_n = int(self.tableWidget.item(row_g, 2).text())
                 pressure_ang = float(self.tableWidget.item(row_g, 3).text())
@@ -177,14 +203,14 @@ class mainWindow(QMainWindow):
                 check_val = self.tableWidget.cellWidget(row_g, 0).getCheckValue()
                 
                 if check_val:
-                    outline = createGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
-                else:
                     outline = createIntGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
+                else:
+                    outline = createGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
                 gears[row_g].append(outline)
-                print('True: ', row_g)
+                print('True: ', row_g + 1)
             else:
                 gears[row_g].append([False])
-                print('False: ', row_g)
+                print('False: ', row_g + 1)
         
         print(gears)
         return gears
@@ -202,7 +228,7 @@ class mainWindow(QMainWindow):
         if col in enteros:
             try:
                 cellType  = int(items[0].text())
-                self.ErrInt = False
+                self.ErrInt = True
                 self.statusLabel.setText('OK: Current cell data is an integer')
                 self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             except ValueError:
@@ -213,7 +239,7 @@ class mainWindow(QMainWindow):
         elif col in decimales:
             try:
                 cellType = float(items[0].text())
-                self.ErrFloat = False
+                self.ErrFloat = True
                 self.statusLabel.setText('OK: Current cell data is a float')
                 self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             except ValueError:
