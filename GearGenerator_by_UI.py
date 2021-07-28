@@ -28,14 +28,15 @@ from PyQt5.QtWidgets import QDialog, QApplication, QMainWindow, QHeaderView, \
 
 from Gear_Mpl_Draw import MplWidget
 
-#--------------------------New Import------------
+# --------------------------Mpl Import------------
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-# from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-# from matplotlib.figure import Figure
-# import matplotlib.pyplot as plt
 import numpy as np
 import random
-#----------------------------------------
+
+# ---------------Internal modules import--------------
+from gear_calc import createGearOutline, createIntGearOutline, displace, rotate
+
+# ----------------------------------------
 
 class mainWindow(QMainWindow):
     def __init__(self):
@@ -46,7 +47,7 @@ class mainWindow(QMainWindow):
         self.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         check_box = internal(self)
-        check_box.stateChanged.connect(self._clickBox)
+        check_box.stateChanged.connect(self._clickCheckBox)
         self.tableWidget.setCellWidget(0, 0, check_box)
 
         angle = QtWidgets.QTableWidgetItem(str(20))
@@ -82,20 +83,77 @@ class mainWindow(QMainWindow):
         # ------------Signals-----------------------------------
         self.add_gear.clicked.connect(self._addRow)
         self.remove_gear.clicked.connect(self._removeRow)
-
+        self.generate_gear.clicked.connect(self._gearCalculation)
         self.tableWidget.itemChanged.connect(self._cellChange)
 
         self._dataRevision()
         # self._cancel.clicked.connect(self._close)
         # self.add_gear.clicked.connect(self._addRow)
 
-    def _clickBox(self):
-        check = self.tableWidget.cellWidget(0, 0).getCheckValue()
+
+    def _clickCheckBox(self):
+        check_row = self.tableWidget.currentRow()
+        check = self.tableWidget.cellWidget(check_row, 0).getCheckValue()
         print(check)
-        # self.statusLabel.setText('Run click box'+ check)
-        # self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-        # print('funcionó')
+        if check:
+            self.statusLabel.setText('Row: ' + str(check_row + 1) + ' - ' + 'Draw Internal Gear')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+        else:
+            self.statusLabel.setText('Row: ' + str(check_row + 1) + ' - ' + 'Draw Normal Gear')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
         
+
+    def _comboBoxRevision(self):
+        combo_row = self.tableWidget.currentRow()
+        # current_col = self.tableWidget.currentRow()
+        value = self.tableWidget.cellWidget(combo_row, 6).currentText()
+        print('este valor: ', value)
+
+        if value == 'Not Linked':
+            Acell = self.tableWidget.item(combo_row, 7).text()
+            Acell = QtWidgets.QTableWidgetItem(Acell)
+            Acell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Acell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(combo_row, 7, Acell)
+            
+            Xcell = self.tableWidget.item(combo_row, 8).text()
+            Xcell = QtWidgets.QTableWidgetItem(Xcell)
+            # Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(combo_row, 8, Xcell)
+
+            Ycell = self.tableWidget.item(combo_row, 9).text()
+            Ycell = QtWidgets.QTableWidgetItem(Ycell)
+            # Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(combo_row, 9, Ycell)
+            
+            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - Gear is ' + value)
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+            print(value)
+
+        else:
+            Acell = self.tableWidget.item(combo_row, 7).text()
+            Acell = QtWidgets.QTableWidgetItem(Acell)
+            # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Acell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(combo_row, 7, Acell)
+            
+            Xcell = self.tableWidget.item(combo_row, 8).text()
+            Xcell = QtWidgets.QTableWidgetItem(Xcell)
+            Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(combo_row, 8, Xcell)
+
+            Ycell = self.tableWidget.item(combo_row, 9).text()
+            Ycell = QtWidgets.QTableWidgetItem(Ycell)
+            Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
+            Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget.setItem(combo_row, 9, Ycell)
+
+            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + value + ' gear')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+            print('meshing with ', value)
 
 
     def _dataRevision(self):
@@ -104,75 +162,34 @@ class mainWindow(QMainWindow):
         pass
 
 
-    def _comboBoxRevision(self):
-        current_row = self.tableWidget.currentRow()
-        # current_col = self.tableWidget.currentRow()
-        value = self.tableWidget.cellWidget(current_row, 6).currentText()
-        print('este valor: ', value)
+    def _gearCalculation(self):
+        verif = [True, False, True]
+        # verif = self._dataRevision(self)
+        gears=[]
+        for row_g in range(len(verif)):
+            gears.append([row_g])
+            print('intento: ', verif[row_g])
+            if (verif[row_g]):
+                teeth_n = int(self.tableWidget.item(row_g, 2).text())
+                pressure_ang = float(self.tableWidget.item(row_g, 3).text())
+                s_or_r_radius = float(self.tableWidget.item(row_g, 4).text()) / 2
+                module_g = float(self.tableWidget.item(row_g, 5).text())
+                check_val = self.tableWidget.cellWidget(row_g, 0).getCheckValue()
+                
+                if check_val:
+                    outline = createGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
+                else:
+                    outline = createIntGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
+                gears[row_g].append(outline)
+                print('True: ', row_g)
+            else:
+                gears[row_g].append([False])
+                print('False: ', row_g)
+        
+        print(gears)
+        return gears
+        
 
-        if value == 'Not Linked':
-            Acell = self.tableWidget.item(current_row, 7).text()
-            Acell = QtWidgets.QTableWidgetItem(Acell)
-            Acell.setFlags(QtCore.Qt.ItemIsEnabled)
-            Acell.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(current_row, 7, Acell)
-            
-            Xcell = self.tableWidget.item(current_row, 8).text()
-            Xcell = QtWidgets.QTableWidgetItem(Xcell)
-            # Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
-            Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(current_row, 8, Xcell)
-
-            Ycell = self.tableWidget.item(current_row, 9).text()
-            Ycell = QtWidgets.QTableWidgetItem(Ycell)
-            # Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
-            Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(current_row, 9, Ycell)
-            
-            self.statusLabel.setText(value + ' Selected')
-            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-            print(value)
-
-        else:
-            Acell = self.tableWidget.item(current_row, 7).text()
-            Acell = QtWidgets.QTableWidgetItem(Acell)
-            # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
-            Acell.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(current_row, 7, Acell)
-            
-            Xcell = self.tableWidget.item(current_row, 8).text()
-            Xcell = QtWidgets.QTableWidgetItem(Xcell)
-            Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
-            Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(current_row, 8, Xcell)
-
-            Ycell = self.tableWidget.item(current_row, 9).text()
-            Ycell = QtWidgets.QTableWidgetItem(Ycell)
-            Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
-            Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(current_row, 9, Ycell)
-
-            self.statusLabel.setText('meshing with ' + value + ' row gear')
-            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-            print('meshing with ', value)
-
-
-        #     print("None")
-        #     Xcell = QtWidgets.QTableWidgetItem('0')
-        #     # Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
-        #     Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
-        #     self.tableWidget.setItem(1, 8, Xcell)
-        #
-        #     Ycell = QtWidgets.QTableWidgetItem('0')
-        #     # Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
-        #     Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
-        #     self.tableWidget.setItem(1, 9, Ycell)
-        #
-        #     Acell = QtWidgets.QTableWidgetItem('0')
-        #     # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
-        #     Acell.setTextAlignment(QtCore.Qt.AlignCenter)
-        #     self.tableWidget.setItem(1, 7, Acell)
-        pass
 
     def _cellChange(self):
         items = self.tableWidget.selectedItems()
@@ -232,7 +249,7 @@ class mainWindow(QMainWindow):
                 print(col)
                 if col == 0:
                     check_box = internal(self)
-                    check_box.stateChanged.connect(self._clickBox)
+                    check_box.stateChanged.connect(self._clickCheckBox)
                     self.tableWidget.setCellWidget(rowCount, col, check_box)
                 elif col == 3:
                     angle = QtWidgets.QTableWidgetItem('20')
