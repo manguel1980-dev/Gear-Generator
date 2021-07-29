@@ -30,7 +30,8 @@ from Gear_Mpl_Draw import MplWidget
 
 # --------------------------Mpl Import------------
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-import numpy as np
+from math import radians, degrees, atan, hypot, sin, cos
+# import numpy as np
 import random
 
 # ---------------Internal modules import--------------
@@ -106,10 +107,11 @@ class mainWindow(QMainWindow):
     def _comboBoxRevision(self):
         combo_row = self.tableWidget.currentRow()
         # current_col = self.tableWidget.currentRow()
-        value = self.tableWidget.cellWidget(combo_row, 6).currentText()
-        print('este valor: ', value)
+        mesh_row_value_pointed = self.tableWidget.cellWidget(combo_row, 6).currentText()
+        print('actual cell: ', combo_row)
+        print('valor apuntado: ', mesh_row_value_pointed)
 
-        if value == 'Not Linked':
+        if mesh_row_value_pointed == 'Not Linked':
             Acell = self.tableWidget.item(combo_row, 7).text()
             Acell = QtWidgets.QTableWidgetItem(Acell)
             Acell.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -128,32 +130,55 @@ class mainWindow(QMainWindow):
             Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(combo_row, 9, Ycell)
             
-            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - Gear is ' + value)
+            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - Gear is ' + mesh_row_value_pointed)
             self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-            print(value)
+            print(mesh_row_value_pointed)
 
         else:
+            try:
+                Acell = float(self.tableWidget.item(combo_row, 7).text())
+                Xcell = float(self.tableWidget.item(combo_row, 8).text())
+                Ycell = float(self.tableWidget.item(combo_row, 9).text())
+                A_pitchDiam = float(self.tableWidget.item(combo_row, 1).text())
+                
+                Acell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 7).text())
+                Xcell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 8).text())
+                Ycell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 9).text())
+                A_pitchDiam_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 1).text())
+
+                if A_pitchDiam == 0 or A_pitchDiam_pointed == 0:
+                    print('pith diameter must be higher than 0')
+
+                pitchDiam_dist = (A_pitchDiam / 2) + (A_pitchDiam_pointed / 2)
+
+                Xcell = str(Xcell_pointed + pitchDiam_dist * cos(radians(Acell)))
+                Ycell = str(Ycell_pointed + pitchDiam_dist * sin(radians(Acell)))
+
+            except ValueError:
+                print('pith diameter missing')
+
+
             Acell = self.tableWidget.item(combo_row, 7).text()
             Acell = QtWidgets.QTableWidgetItem(Acell)
             # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
             Acell.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(combo_row, 7, Acell)
             
-            Xcell = self.tableWidget.item(combo_row, 8).text()
+            # Xcell = self.tableWidget.item(combo_row, 8).text()
             Xcell = QtWidgets.QTableWidgetItem(Xcell)
             Xcell.setFlags(QtCore.Qt.ItemIsEnabled)
             Xcell.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(combo_row, 8, Xcell)
 
-            Ycell = self.tableWidget.item(combo_row, 9).text()
+            # Ycell = self.tableWidget.item(combo_row, 9).text()
             Ycell = QtWidgets.QTableWidgetItem(Ycell)
             Ycell.setFlags(QtCore.Qt.ItemIsEnabled)
             Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(combo_row, 9, Ycell)
 
-            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + value + ' gear')
+            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
             self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-            print('meshing with ', value)
+            print('meshing with ', mesh_row_value_pointed)
 
 
     def _dataRevision(self):
@@ -177,6 +202,7 @@ class mainWindow(QMainWindow):
                 y_rev = float(self.tableWidget.item(r, 9).text())
 
                 if mesh_rev != 'Not Linked':
+                    pass
 
                     
                 verification.append(True)
