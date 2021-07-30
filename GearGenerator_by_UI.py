@@ -43,6 +43,7 @@ class mainWindow(QMainWindow):
     def __init__(self):
         self.ErrInt = True
         self.ErrFloat = True
+        self.ErrPitchDiam = True
         super(mainWindow, self).__init__()
         loadUi('Gear_Generator.ui', self)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -72,24 +73,28 @@ class mainWindow(QMainWindow):
 
 
         # ------------------------------------Mpl Widget insertion---------------------------------------
-        mplW = MplWidget()
-        self.addToolBar(QtCore.Qt.BottomToolBarArea, NavigationToolbar(mplW.canvas, self))
+        self._gearGraphic()
 
-        self.Graph = MplWidget(self.mplWidget)
         # self.Graph = CanvasGraph(self.mplWidget)
-        self.Graph.setObjectName("Gear-View")
+        # self.Graph.setObjectName("Gear-View")
 
         # ---------------------------------------------------------------------------
 
         # ------------Signals-----------------------------------
         self.add_gear.clicked.connect(self._addRow)
         self.remove_gear.clicked.connect(self._removeRow)
-        self.generate_gear.clicked.connect(self._gearCalculation)
+        self.generate_gear.clicked.connect(self._gearGraphic)
         self.tableWidget.itemChanged.connect(self._cellChange)
 
         self._dataRevision()
         # self._cancel.clicked.connect(self._close)
         # self.add_gear.clicked.connect(self._addRow)
+
+    def _gearGraphic(self):
+        gear_outline = self._gearCalculation()
+        mplW = MplWidget()
+        # self.addToolBar(QtCore.Qt.BottomToolBarArea, NavigationToolbar(mplW.canvas, self))
+        self.Graph = MplWidget(self.mplWidget, gear_outline)
 
 
     def _clickCheckBox(self):
@@ -113,6 +118,7 @@ class mainWindow(QMainWindow):
 
         if mesh_row_value_pointed == 'Not Linked':
             Acell = self.tableWidget.item(combo_row, 7).text()
+            print(Acell)
             Acell = QtWidgets.QTableWidgetItem(Acell)
             Acell.setFlags(QtCore.Qt.ItemIsEnabled)
             Acell.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -133,32 +139,50 @@ class mainWindow(QMainWindow):
             self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - Gear is ' + mesh_row_value_pointed)
             self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             print(mesh_row_value_pointed)
+            self.ErrPitchDiam = True
 
         else:
             try:
-                Acell = float(self.tableWidget.item(combo_row, 7).text())
-                Xcell = float(self.tableWidget.item(combo_row, 8).text())
-                Ycell = float(self.tableWidget.item(combo_row, 9).text())
-                A_pitchDiam = float(self.tableWidget.item(combo_row, 1).text())
-                
-                Acell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 7).text())
-                Xcell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 8).text())
-                Ycell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 9).text())
-                A_pitchDiam_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 1).text())
-
-                if A_pitchDiam == 0 or A_pitchDiam_pointed == 0:
-                    print('pith diameter must be higher than 0')
-
-                pitchDiam_dist = (A_pitchDiam / 2) + (A_pitchDiam_pointed / 2)
-
-                Xcell = str(Xcell_pointed + pitchDiam_dist * cos(radians(Acell)))
-                Ycell = str(Ycell_pointed + pitchDiam_dist * sin(radians(Acell)))
+                A_pitchDiam = float(self.tableWidget.item(combo_row, 1).text())                 
 
             except ValueError:
-                print('pith diameter missing')
+                Acell = '0'
+                Xcell ='0'
+                Ycell = '0'
+                self.meshMessage = 'Pith diameter missing in current row (' + str(combo_row + 1) + ')'
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
+                print('Pith diameter missing in current row (' + str(combo_row + 1) + ')')
+                self.ErrPitchDiam = False
+            
+            else:
+                try:
+                    A_pitchDiam_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 1).text())
 
+                    Acell = float(self.tableWidget.item(combo_row, 7).text())
+                    Xcell = float(self.tableWidget.item(combo_row, 8).text())
+                    Ycell = float(self.tableWidget.item(combo_row, 9).text())
+                    
+                    Acell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 7).text())
+                    Xcell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 8).text())
+                    Ycell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 9).text())
 
-            Acell = self.tableWidget.item(combo_row, 7).text()
+                    pitchDiam_dist = (A_pitchDiam / 2) + (A_pitchDiam_pointed / 2)
+
+                    Xcell = str(Xcell_pointed + pitchDiam_dist * cos(radians(Acell)))
+                    Ycell = str(Ycell_pointed + pitchDiam_dist * sin(radians(Acell)))
+                    Acell = str(Acell)
+
+                    self.ErrPitchDiam = True
+
+                except:
+                    Acell = '0'
+                    Xcell ='0'
+                    Ycell = '0'
+                    self.meshMessage = 'Pith diameter missing in row (' + str(mesh_row_value_pointed) + ')'
+                    print('Pith diameter missing in row (' + str(mesh_row_value_pointed) + ')')
+                    self.ErrPitchDiam = False
+
+            # Acell = self.tableWidget.item(combo_row, 7).text()
             Acell = QtWidgets.QTableWidgetItem(Acell)
             # Acell.setFlags(QtCore.Qt.ItemIsEnabled)
             Acell.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -176,10 +200,15 @@ class mainWindow(QMainWindow):
             Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(combo_row, 9, Ycell)
 
-            self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
-            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-            print('meshing with ', mesh_row_value_pointed)
-
+            if self.ErrPitchDiam:
+                self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
+                print('meshing with ', mesh_row_value_pointed)
+            else:
+                self.statusLabel.setText(self.meshMessage + '  |  Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
+                print('meshing with ', mesh_row_value_pointed)
+    
 
     def _dataRevision(self):
         self.ErrInt = True
@@ -203,9 +232,9 @@ class mainWindow(QMainWindow):
 
                 if mesh_rev != 'Not Linked':
                     pass
-
-                    
+     
                 verification.append(True)
+
             except:
                 verification.append(False)
         
@@ -227,20 +256,28 @@ class mainWindow(QMainWindow):
                 s_or_r_radius = float(self.tableWidget.item(row_g, 4).text()) / 2
                 module_g = float(self.tableWidget.item(row_g, 5).text())
                 check_val = self.tableWidget.cellWidget(row_g, 0).getCheckValue()
+                Xcell = float(self.tableWidget.item(row_g, 8).text())
+                Ycell = float(self.tableWidget.item(row_g, 9).text())
                 
                 if check_val:
                     outline = createIntGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
+
                 else:
                     outline = createGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
+
+                if Xcell != 0 or Ycell != 0:
+                    outline_diplaced = displace(outline, Xcell, Ycell)
+                    outline = outline_diplaced
+                    
                 gears[row_g].append(outline)
                 print('True: ', row_g + 1)
+
             else:
                 gears[row_g].append([False])
                 print('False: ', row_g + 1)
         
         print(gears)
-        return gears
-        
+        return gears       
 
 
     def _cellChange(self):
@@ -331,13 +368,19 @@ class mainWindow(QMainWindow):
                     cellCenter = QtWidgets.QTableWidgetItem()
                     cellCenter.setTextAlignment(QtCore.Qt.AlignCenter)
                     self.tableWidget.setItem(rowCount, col, cellCenter)
+        
+            self.statusLabel.setText('OK: Row just added')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color:rgb(0, 0, 0)")
 
-
+    
     def _removeRow(self):
         if self.tableWidget.rowCount() > 0:
             self.tableWidget.removeRow(self.tableWidget.rowCount()-1)
 
+            self.statusLabel.setText('OK: Row just deleted')
+            self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color:rgb(0, 0, 0)")
 
+    
 
 # ----------------Events----------------------------------------------
 # Properly defined in the future

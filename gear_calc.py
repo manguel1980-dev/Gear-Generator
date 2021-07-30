@@ -182,8 +182,20 @@ def getInvolutePolar(Rb, R):
 
 # Displace pt {x: , y: } by X or Y disrtance about origin
 #---------------------------------------------------
-def displace(pt, distX, distY):
-    return[pt[x]+ distX, pt[y]+distY]
+def displace(pts, distX, distY):
+    rr = False
+    resp = []
+    for i in range(len(pts)):
+        if isinstance(pts[i], list) and rr == False:
+            resp.append([pts[i][x]+ distX, pts[i][y]+distY])
+        elif pts[i] == 'R':
+            resp.append(pts[i])
+            rr = True
+        elif rr:
+            resp.append(pts[i])
+        else:
+            resp.append(pts[i])
+    return resp
 
 
 """
