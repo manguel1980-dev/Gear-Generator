@@ -73,6 +73,7 @@ class mainWindow(QMainWindow):
 
 
         # ------------------------------------Mpl Widget insertion---------------------------------------
+
         self._gearGraphic()
 
         # self.Graph = CanvasGraph(self.mplWidget)
@@ -91,10 +92,12 @@ class mainWindow(QMainWindow):
         # self.add_gear.clicked.connect(self._addRow)
 
     def _gearGraphic(self):
+
         gear_outline = self._gearCalculation()
         # self.mplW = MplWidget(self.mplWidget)
         # self.addToolBar(QtCore.Qt.BottomToolBarArea, NavigationToolbar(mplW.canvas, self))
         self.Graph = MplWidget(self.mplWidget, gear_outline)
+        self.Graph.show()
 
 
     def _clickCheckBox(self):
@@ -264,10 +267,12 @@ class mainWindow(QMainWindow):
 
                 else:
                     outline = createGearOutline(module_g, teeth_n, pressure_ang, s_or_r_radius)
+                    print('outline', outline)
 
                 if Xcell != 0 or Ycell != 0:
                     outline_diplaced = displace(outline, Xcell, Ycell)
                     outline = outline_diplaced
+                    print('outline displaces:', outline)
                     
                 gears[row_g].append(outline)
                 print('True: ', row_g + 1)
@@ -276,7 +281,7 @@ class mainWindow(QMainWindow):
                 gears[row_g].append([False])
                 print('False: ', row_g + 1)
         
-        print(gears)
+        # print(gears)
         return gears       
 
     def _cellChange(self):
@@ -284,8 +289,8 @@ class mainWindow(QMainWindow):
         col = self.tableWidget.currentColumn()
         row = self.tableWidget.currentRow()
         print('_cellChange: ', row, col)
-        enteros = [1, 2]
-        decimales = [3, 4, 5, 7, 8, 9]
+        enteros = [2]
+        decimales = [1, 3, 4, 5, 7, 8, 9]
 
         if col in enteros:
             try:

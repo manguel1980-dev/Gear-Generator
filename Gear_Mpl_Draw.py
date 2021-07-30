@@ -64,6 +64,8 @@ class MplWidget(QWidget):
         vertical_layout = QVBoxLayout()
         vertical_layout.addWidget(self.canvas)
 
+        self.canvas.axes.clear()
+
         if isinstance(values, list):
             x = 0
             y = 1
