@@ -41,9 +41,13 @@ from gear_calc import createGearOutline, createIntGearOutline, displace, rotate
 
 class mainWindow(QMainWindow):
     def __init__(self):
+        
         self.ErrInt = True
         self.ErrFloat = True
         self.ErrPitchDiam = True
+        self.ErrInternalGear = False
+        self.ErrDiameter = False
+        
         super(mainWindow, self).__init__()
         loadUi('Gear_Generator.ui', self)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -142,7 +146,7 @@ class mainWindow(QMainWindow):
             self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - Gear is ' + mesh_row_value_pointed)
             self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
             print(mesh_row_value_pointed)
-            self.ErrPitchDiam = True
+            self.ErrPitchDiam = False
 
         else:
             try:
@@ -155,7 +159,7 @@ class mainWindow(QMainWindow):
                 self.meshMessage = 'Pith diameter missing in current row (' + str(combo_row + 1) + ')'
                 self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
                 print('Pith diameter missing in current row (' + str(combo_row + 1) + ')')
-                self.ErrPitchDiam = False
+                self.ErrPitchDiam = True
             
             else:
                 try:
@@ -164,18 +168,59 @@ class mainWindow(QMainWindow):
                     Acell = float(self.tableWidget.item(combo_row, 7).text())
                     Xcell = float(self.tableWidget.item(combo_row, 8).text())
                     Ycell = float(self.tableWidget.item(combo_row, 9).text())
+                    CCell = self.tableWidget.cellWidget(combo_row, 0).getCheckValue()
+                    print('Este es elcheck value: ', CCell)
                     
                     Acell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 7).text())
                     Xcell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 8).text())
                     Ycell_pointed = float(self.tableWidget.item(int(mesh_row_value_pointed) - 1, 9).text())
+                    Cell_pointed = self.tableWidget.cellWidget(int(mesh_row_value_pointed) - 1, 0).getCheckValue()
+                    print('Este es elcheck value apuntado: ', Cell_pointed)
 
-                    pitchDiam_dist = (A_pitchDiam / 2) + (A_pitchDiam_pointed / 2)
+                    if CCell and Cell_pointed:
+                        self.ErrInternalGear = True
+                        Acell = '0'
+                        Xcell ='0'
+                        Ycell = '0'
+                        self.meshMessage = 'Gears ' + str(mesh_row_value_pointed) + ' and ' + str(combo_row + 1) + ' can not be meshed'
 
-                    Xcell = str(Xcell_pointed + pitchDiam_dist * cos(radians(Acell)))
-                    Ycell = str(Ycell_pointed + pitchDiam_dist * sin(radians(Acell)))
-                    Acell = str(Acell)
+                    elif Cell_pointed:
+                        if A_pitchDiam_pointed <= A_pitchDiam:
+                            self.ErrDiameter = True
+                            Acell = '0'
+                            Xcell ='0'
+                            Ycell = '0'
+                            self.meshMessage = 'Gears ' + str(mesh_row_value_pointed) + ' must be higher than' + str(combo_row + 1) + ' |  Imposible meshed'
 
-                    self.ErrPitchDiam = True
+                        else:
+                            pitchDiam_dist = (A_pitchDiam_pointed / 2) - (A_pitchDiam / 2)
+                            Xcell = str(Xcell_pointed - pitchDiam_dist * cos(radians(Acell)))
+                            Ycell = str(Ycell_pointed - pitchDiam_dist * sin(radians(Acell)))
+                            Acell = str(Acell)
+                            self.ErrDiameter = False
+
+                    elif CCell:
+                        if A_pitchDiam <= A_pitchDiam_pointed:
+                            Acell = '0'
+                            Xcell ='0'
+                            Ycell = '0'
+                            self.ErrDiameter = True
+                            self.meshMessage = 'Gears ' + str(combo_row + 1) + ' must be higher than' + str(mesh_row_value_pointed) + ' |  Imposible meshed'
+
+                        else:
+                            pitchDiam_dist = (A_pitchDiam_pointed / 2) - (A_pitchDiam / 2)
+                            Xcell = str(Xcell_pointed - pitchDiam_dist * cos(radians(Acell)))
+                            Ycell = str(Ycell_pointed - pitchDiam_dist * sin(radians(Acell)))
+                            Acell = str(Acell)
+                            self.ErrDiameter = False
+
+                    else:
+                        pitchDiam_dist = (A_pitchDiam_pointed / 2) + (A_pitchDiam / 2)
+                        Xcell = str(Xcell_pointed + pitchDiam_dist * cos(radians(Acell)))
+                        Ycell = str(Ycell_pointed + pitchDiam_dist * sin(radians(Acell)))
+                        Acell = str(Acell)
+
+                    self.ErrPitchDiam = False
 
                 except:
                     Acell = '0'
@@ -183,7 +228,7 @@ class mainWindow(QMainWindow):
                     Ycell = '0'
                     self.meshMessage = 'Pith diameter missing in row (' + str(mesh_row_value_pointed) + ')'
                     print('Pith diameter missing in row (' + str(mesh_row_value_pointed) + ')')
-                    self.ErrPitchDiam = False
+                    self.ErrPitchDiam = True
 
             # Acell = self.tableWidget.item(combo_row, 7).text()
             Acell = QtWidgets.QTableWidgetItem(Acell)
@@ -203,13 +248,26 @@ class mainWindow(QMainWindow):
             Ycell.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(combo_row, 9, Ycell)
 
+            # todo: corregir funcionamiento de mensajes de error 
+
             if self.ErrPitchDiam:
-                self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
-                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
-                print('meshing with ', mesh_row_value_pointed)
-            else:
                 self.statusLabel.setText(self.meshMessage + '  |  Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
                 self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
+                print('meshing with ', mesh_row_value_pointed)
+
+            elif self.ErrInternalGear:
+                self.statusLabel.setText(self.meshMessage)
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
+                print('meshing with ', mesh_row_value_pointed)
+
+            elif self.ErrDiameter:
+                self.statusLabel.setText(self.meshMessage)
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(122, 55, 55)")
+                print('meshing with ', mesh_row_value_pointed)
+
+            else:
+                self.statusLabel.setText('Row: ' + str(combo_row + 1) + ' - ' + 'meshing with row ' + mesh_row_value_pointed + ' gear')
+                self.statusLabel.setStyleSheet("background-color:rgba(122, 167, 146, 150); color: rgb(0, 0, 0)")
                 print('meshing with ', mesh_row_value_pointed)
     
 
