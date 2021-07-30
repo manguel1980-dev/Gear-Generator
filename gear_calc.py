@@ -183,7 +183,7 @@ def getInvolutePolar(Rb, R):
 # Displace pt {x: , y: } by X or Y disrtance about origin
 #---------------------------------------------------
 def displace(pts, distX, distY):
-    rr = False  # Switch to detect difference between gear format and Radius (shaft or rim) format data
+    rr = False  # Switch to detect difference between gear format and Radius (shaft or rim) format data.
     resp = []
     for i in range(len(pts)):
         if isinstance(pts[i], list) and rr == False:

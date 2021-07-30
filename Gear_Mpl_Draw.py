@@ -70,19 +70,21 @@ class MplWidget(QWidget):
             for i in range(len(values)):
                 x_gear = []
                 y_gear = []
-                print('valor ', i)
+                rr = False  # Switch to detect difference between gear format and Radius (shaft or rim) format data
+                # print('valor I: ', i)
                 for j in range(len(values[i][1])):
-                    print('valor ', j)
-                    if isinstance(values[i][1][j], list):
+                    # print('valor J:', j)
+                    if isinstance(values[i][1][j], list) and rr == False:
                         x_gear.append(values[i][1][j][x])
                         y_gear.append(values[i][1][j][y])
                     elif values[i][1][j] == 'R':
                         radio = values[i][1][j + 1]
-                        break
-                self.canvas.axes.add_patch(plt.Circle((0,0), radio, fill=False))
+                        rr = True
+
+                self.canvas.axes.add_patch(plt.Circle((0, 0), radio, fill=False))
                 self.canvas.axes.plot(x_gear, y_gear)
-                print('imprimir value ' + str(i))
-                # print(x_gear)
+                print('print value ' + str(i))
+                print(x_gear)
 
         # self.canvas.axes = self.canvas.figure.add_subplot(111)
         # self.canvas.axes.plot([0,1,2,3,4], [10,1,20,3,40])

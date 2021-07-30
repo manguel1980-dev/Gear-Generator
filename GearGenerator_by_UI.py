@@ -92,7 +92,7 @@ class mainWindow(QMainWindow):
 
     def _gearGraphic(self):
         gear_outline = self._gearCalculation()
-        mplW = MplWidget()
+        # self.mplW = MplWidget(self.mplWidget)
         # self.addToolBar(QtCore.Qt.BottomToolBarArea, NavigationToolbar(mplW.canvas, self))
         self.Graph = MplWidget(self.mplWidget, gear_outline)
 
@@ -278,7 +278,6 @@ class mainWindow(QMainWindow):
         
         print(gears)
         return gears       
-
 
     def _cellChange(self):
         items = self.tableWidget.selectedItems()
