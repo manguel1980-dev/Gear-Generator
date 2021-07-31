@@ -96,7 +96,6 @@ class mainWindow(QMainWindow):
         # self.add_gear.clicked.connect(self._addRow)
 
     def _gearGraphic(self):
-
         gear_outline = self._gearCalculation()
         # self.mplW = MplWidget(self.mplWidget)
         # self.addToolBar(QtCore.Qt.BottomToolBarArea, NavigationToolbar(mplW.canvas, self))
@@ -306,7 +305,8 @@ class mainWindow(QMainWindow):
         # verif = [True, False, True]
         verif = self._dataRevision()
         gears=[]
-
+        location = []
+        
         for row_g in range(len(verif)):
             gears.append([row_g + 1])
             print('intento: ', verif[row_g])
@@ -317,6 +317,7 @@ class mainWindow(QMainWindow):
                 s_or_r_radius = float(self.tableWidget.item(row_g, 4).text()) / 2
                 module_g = float(self.tableWidget.item(row_g, 5).text())
                 check_val = self.tableWidget.cellWidget(row_g, 0).getCheckValue()
+                Acell = float(self.tableWidget.item(row_g, 7).text())
                 Xcell = float(self.tableWidget.item(row_g, 8).text())
                 Ycell = float(self.tableWidget.item(row_g, 9).text())
                 
@@ -331,16 +332,18 @@ class mainWindow(QMainWindow):
                     outline_diplaced = displace(outline, Xcell, Ycell)
                     outline = outline_diplaced
                     print('outline displaces:', outline)
-                    
+
+                location.append([Acell, [Xcell, Ycell]])                    
                 gears[row_g].append(outline)
                 print('True: ', row_g + 1)
 
             else:
                 gears[row_g].append([False])
+                location.append([False])
                 print('False: ', row_g + 1)
         
         # print(gears)
-        return gears       
+        return [location, gears]       
 
     def _cellChange(self):
         items = self.tableWidget.selectedItems()

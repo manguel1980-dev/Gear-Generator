@@ -547,36 +547,44 @@ def createIntGearOutline(module, teeth, pressureAngle=20, rimRadius=None):
 
 # todo: convert in comment or delete
 #-----------------------Pueba-------------------------------------
-# xxa = []
-# yya = []
-# xxb = []
-# yyb = []
-#
-# # def createGearOutline(module, teeth, pressureAngle=20, shaftRadius=0)
-# # da = createGearOutline(10, 40, 20, 60)
-# # Dp = z * m
-# da = createGearOutline(.15, 40, 20, 2)
-# dbb = createIntGearOutline(.15, 20, 20, 1)
-#
-# for i in range(len(da)):
-#     if isinstance(da[i], list):
-#         xxa.append(da[i][x])
-#         yya.append(da[i][y])
-#
-# db = rotateTooth(dbb,radians(9))
-# for i in range(len(db)):
-#     if isinstance(db[i], list):
-#         disp = displace(db[i], 0, 1.5)
-#         xxb.append(disp[x])
-#         yyb.append(disp[y])
-#
-#
+xxa = []
+yya = []
+xxb = []
+yyb = []
+
+# def createGearOutline(module, teeth, pressureAngle=20, shaftRadius=0)
+# da = createGearOutline(10, 40, 20, 60)
+# Dp = z * m
+da = createGearOutline(.15, 40, 20, 2)
+dbb = createGearOutline(.15, 20, 20, 1)
+
+for i in range(len(da)):
+    if isinstance(da[i], list):
+        xxa.append(da[i][x])
+        yya.append(da[i][y])
+
+angle_loc = 36
+x_loc = 4.5 * cos(radians(angle_loc)) 
+y_loc = 4.5 * sin(radians(angle_loc))
+
+teeth_angle_rotation = 9    #*(cos(2*radians(angle_loc))-sin(2*radians(angle_loc)))
+db = rotateTooth(dbb, radians(teeth_angle_rotation))
+disp = displace(db, x_loc, y_loc)
+
+# db = rotateTooth(db, radians(angle_loc))
+for i in range(len(disp)):
+    if isinstance(disp[i], list):
+        # disp = displace(db[i], 0, 1.5)
+        xxb.append(disp[i][x])
+        yyb.append(disp[i][y])
+
+
 # print(da)
 # print(db)
-#
-# import matplotlib.pyplot as plt
-# plt.plot(xxa,yya)
-# plt.plot(xxb,yyb)
-# plt.show()
+
+import matplotlib.pyplot as plt
+plt.plot(xxa,yya)
+plt.plot(xxb,yyb)
+plt.show()
 #-------------------Prueba--------------------------
 
