@@ -555,19 +555,36 @@ yyb = []
 # def createGearOutline(module, teeth, pressureAngle=20, shaftRadius=0)
 # da = createGearOutline(10, 40, 20, 60)
 # Dp = z * m
-da = createGearOutline(.15, 40, 20, 2)
-dbb = createGearOutline(.15, 20, 20, 1)
+mo = .15
+teeth_a = 40
+teeth_b = 20
+da = createGearOutline(mo, teeth_a, 20, 2)
+dbb = createGearOutline(mo, teeth_b, 20, 1)
+
+p_diam_a = mo * teeth_a
+p_diam_b = mo * teeth_b
+
+dista = p_diam_a/2 + p_diam_b/2
+
+ang_a = 360 / teeth_a
+ang_b = 360 / teeth_b
+
 
 for i in range(len(da)):
     if isinstance(da[i], list):
         xxa.append(da[i][x])
         yya.append(da[i][y])
 
-angle_loc = 36
-x_loc = 4.5 * cos(radians(angle_loc)) 
-y_loc = 4.5 * sin(radians(angle_loc))
+angle_loc = 21
+x_loc = dista * cos(radians(angle_loc))
+y_loc = dista * sin(radians(angle_loc))
 
-teeth_angle_rotation = 9    #*(cos(2*radians(angle_loc))-sin(2*radians(angle_loc)))
+# if angle_loc % 9 == 0:
+#     teeth_angle_rotation = 9 + angle_loc
+# else:
+#     teeth_angle_rotation = 9+3+1.5
+
+teeth_angle_rotation = (ang_b/2) + angle_loc*3  #*(cos(2*radians(angle_loc))-sin(2*radians(angle_loc)))
 db = rotateTooth(dbb, radians(teeth_angle_rotation))
 disp = displace(db, x_loc, y_loc)
 
